@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    mapper  标签：最外层标签，所有的标签内容都要写在这里面
+    namespace 属性：唯一绑定一个接口
+-->
+<mapper namespace="org.sx.mapper.UserMapper">
+    <!--
+    构建 resultMap 结果集映射关系
+        resultMap:
+            id: 给结果集取一个名字，唯一
+            type： 把结果集映射到哪一个类上
+            id：指定主键id的映射关系
+                column： 数据库字段的名字
+                property：实体类中成员变量的名字
+    -->
+    <resultMap id="userMap" type="user">
+        <id column="user_id" property="userId"/>
+        <result column="user_image" property="userImage"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="user_email" property="userEmail"/>
+        <result column="user_state" property="userState"/>
+        <!--
+            role: 因为他是属于另一个类，User 类和 role 类是一对一的关系
+            这里需要使用 association 标签， porperty : User 类中引入 Role 类对象的成员变量
+        -->
+        <association property="role">
+            <id column="role_id" property="roleId"/>
+            <result column="role_name" property="roleName"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="userCourseMap" type="course">
+        <id column="course_id" property="courseId"/>
+        <result column="course_name" property="courseName"/>
+        <result column="teacher" property="teacher"/>
+        <result column="course_hour" property="courseHour"/>
+        <result column="credit" property="credit"/>
+
+        <association property="user">
+            <id column="user_id" property="userId"/>
+            <result column="username" property="username"/>
+        </association>
+    </resultMap>
+<!--    <resultMap id="userCoursesMap" type="userCourse">-->
+<!--        <id column="id" property="id"/>-->
+<!--        <result column="username" property="username"/>-->
+<!--        <id column="course_id" property="courseId"/>-->
+<!--        <result column="course_name" property="courseName"/>-->
+<!--        <result column="teacher" property="teacher"/>-->
+<!--    </resultMap>-->
+
+    <!--
+        select标签：用来做查询的标签
+        id: 唯一绑定 namespace 绑定的接口中的一个方法名字
+        resultType: 把查询出来的数据封装到指定的类上面
+        resultMap: 手动指定结果集映射关系，值域是定义的 resultMap 的 id 之一
+
+    -->
+    <select id="login" resultMap="userMap">
+        SELECT
+            u.*,
+            r.*
+        FROM
+            `user` u
+            LEFT JOIN `user_role_rel` urr ON urr.user_id = u.user_id
+            LEFT JOIN `role` r ON r.role_id = urr.role_id
+        WHERE
+            u.user_state = 0
+            AND	u.username = #{username}
+            AND u.`password` = #{password}
+    </select>
+
+    <!--    userList    -->
+    <select id="userList" resultMap="userMap">
+        SELECT
+        u.*,
+        r.*
+        FROM
+        `user` u
+        LEFT JOIN `user_role_rel` urr ON urr.user_id = u.user_id
+        LEFT JOIN `role` r ON r.role_id = urr.role_id
+        WHERE
+        u.user_state = 0
+        <if test="param != null and param != ''">
+            AND u.username like concat('%',#{param},'%')
+        </if>
+    </select>
+
+
+
+</mapper>

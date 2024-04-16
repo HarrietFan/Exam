@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+    mapper  标签：最外层标签，所有的标签内容都要写在这里面
+    namespace 属性：唯一绑定一个接口
+-->
+<mapper namespace="org.sx.mapper.CourseMapper">
+    <!--
+    构建 resultMap 结果集映射关系
+        resultMap:
+            id: 给结果集取一个名字，唯一
+            type： 把结果集映射到哪一个类上
+            id：指定主键id的映射关系
+                column： 数据库字段的名字
+                property：实体类中成员变量的名字
+    -->
+    <resultMap id="userCourseMap" type="course">
+        <id column="course_id" property="courseId"/>
+        <result column="course_name" property="courseName"/>
+        <result column="teacher" property="teacher"/>
+        <result column="course_hour" property="courseHour"/>
+        <result column="credit" property="credit"/>
+
+        <association property="user">
+            <id column="user_id" property="userId"/>
+            <result column="username" property="username"/>
+        </association>
+    </resultMap>
+
+    <!--    courseList    -->
+    <select id="courseList" resultMap="userCourseMap">
+        SELECT *
+        FROM `course`
+    </select>
+
+    <select id="myCourse" resultType="course">
+        SELECT
+            *
+        FROM
+            `user_course` uc
+        WHERE
+            uc.username = #{username}
+    </select>
+
+</mapper>
